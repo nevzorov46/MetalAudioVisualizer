@@ -8,17 +8,13 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject var audio = AudioAnalyzer()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        MetalView(audio: audio)
+            .ignoresSafeArea()
+            .onAppear {
+                audio.start(vocals: "vocals", bass: "bass", drums: "drums", other: "other", ext: "m4a")
+            }
     }
-}
-
-#Preview {
-    ContentView()
 }
