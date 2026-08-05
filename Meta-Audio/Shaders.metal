@@ -4,6 +4,9 @@ using namespace metal;
 struct VertexOut {
     float4 position [[position]];
     float4 color;
+    float2 localPos;
+    float rayT;
+
 };
 
 struct Uniforms {
@@ -20,6 +23,7 @@ vertex VertexOut vertexShader(const constant float2 *vertexArray [[buffer(0)]],
                               uint vid [[vertex_id]]) {
     VertexOut out;
     float2 v = vertexArray[vid];
+    out.localPos = v;
     
     float overall = (u.bass + u.drums + u.vocals + u.other) / 4.0;
     float diskScale = 0.3 + overall * 0.06;   // маленький — только для диска
@@ -41,6 +45,7 @@ vertex VertexOut vertexShader(const constant float2 *vertexArray [[buffer(0)]],
         // Шипы: определяем сектор по индексу вершины
         int spikeIndex = int(vid) / 4;
         bool isOuter = (vid % 4 >= 2);  // первые 2 — inner, последние 2 — outer
+        out.rayT = isOuter ? 1.0 : 0.0;
         
         int numSpikes = 120;
         int sector = (spikeIndex * 4) / numSpikes; // 0..3
@@ -69,6 +74,26 @@ vertex VertexOut vertexShader(const constant float2 *vertexArray [[buffer(0)]],
     return out;
 }
 
-fragment float4 fragmentShader(VertexOut in [[stage_in]]) {
-    return in.color;
+fragment float4 fragmentShader(
+    VertexOut in [[stage_in]],
+    constant Uniforms& u [[buffer(0)]]
+)
+{
+    float3 color = in.color.rgb;
+
+    float overall =
+        (u.bass + u.drums + u.vocals + u.other) * 0.25;
+
+    float dist = length(in.localPos);
+
+    // яркое ядро
+    float core = smoothstep(0.65, 0.0, dist);
+
+    color += core * overall * float3(0.6, 0.15, 1.0);
+
+    float fade = exp(-in.rayT * 2.5);
+
+    color *= fade;
+
+    return float4(color, fade);
 }

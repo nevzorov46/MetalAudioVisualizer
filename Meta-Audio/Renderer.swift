@@ -94,6 +94,11 @@ class Renderer: NSObject, MTKViewDelegate {
         // Рисуем диск (заполненный круг)
         encoder.setVertexBuffer(diskVertexBuffer, offset: 0, index: 0)
         encoder.setVertexBytes([Int32(0)], length: 4, index: 2) // mode 0 = disk
+        encoder.setFragmentBytes(
+            &uniforms,
+            length: MemoryLayout<Uniforms>.size,
+            index: 0
+        )
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: diskVertexCount)
         
         // Рисуем шипы поверх
