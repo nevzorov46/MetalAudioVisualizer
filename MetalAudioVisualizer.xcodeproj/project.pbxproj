@@ -11,9 +11,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		0C44584A301CB6DB00A81906 /* Meta-Audio */ = {
+		0C44584A301CB6DB00A81906 /* MetalAudioVisualizer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Meta-Audio";
+			path = MetalAudioVisualizer;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		0C44583F301CB6DB00A81906 = {
 			isa = PBXGroup;
 			children = (
-				0C44584A301CB6DB00A81906 /* Meta-Audio */,
+				0C44584A301CB6DB00A81906 /* MetalAudioVisualizer */,
 				0C445849301CB6DB00A81906 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,7 +61,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				0C44584A301CB6DB00A81906 /* Meta-Audio */,
+				0C44584A301CB6DB00A81906 /* MetalAudioVisualizer */,
 			);
 			name = "Meta-Audio";
 			packageProductDependencies = (
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 0C445843301CB6DB00A81906 /* Build configuration list for PBXProject "Meta-Audio" */;
+			buildConfigurationList = 0C445843301CB6DB00A81906 /* Build configuration list for PBXProject "MetalAudioVisualizer" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -315,7 +315,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0C445843301CB6DB00A81906 /* Build configuration list for PBXProject "Meta-Audio" */ = {
+		0C445843301CB6DB00A81906 /* Build configuration list for PBXProject "MetalAudioVisualizer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0C445851301CB6DC00A81906 /* Debug */,
