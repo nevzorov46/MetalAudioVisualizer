@@ -1,10 +1,3 @@
-//
-//  MetalView.swift
-//  Meta-Audio
-//
-//  Created by Unknown Pleasure on 31/07/2026.
-//
-
 import Combine
 import UIKit
 import Foundation
@@ -19,7 +12,7 @@ struct MetalView: UIViewRepresentable {
         view.colorPixelFormat = .rgba16Float
         view.device = MTLCreateSystemDefaultDevice()
         view.delegate = context.coordinator
-        view.preferredFramesPerSecond = 60
+        view.preferredFramesPerSecond = Constants.preferredFramesPerSecond
         return view
     }
     func updateUIView(_ uiView: MTKView, context: Context) {}

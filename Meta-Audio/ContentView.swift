@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Meta-Audio
-//
-//  Created by Unknown Pleasure on 31/07/2026.
-//
-
 import SwiftUI
 
 struct ContentView: View {
@@ -14,7 +7,13 @@ struct ContentView: View {
         MetalView(audio: audio)
             .ignoresSafeArea()
             .onAppear {
-                audio.start(vocals: "vocals", bass: "bass", drums: "drums", other: "other", ext: "m4a")
+                audio.start(
+                    vocals: Constants.vocalsTrackName,
+                    bass: Constants.bassTrackName,
+                    drums: Constants.drumsTrackName,
+                    other: Constants.otherInstrumentsTrackName,
+                    ext: Constants.extensionFormat
+                )
             }
     }
 }

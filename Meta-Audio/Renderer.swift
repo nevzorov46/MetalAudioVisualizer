@@ -13,7 +13,7 @@ class Renderer: NSObject, MTKViewDelegate {
     var spikeVertexBuffer: MTLBuffer!
     var spikeVertexCount = 0
     
-    let numSpikes = 120
+    let numSpikes = Constants.numberOfSpikes
     
     init(audio: AudioAnalyzer) {
         self.audio = audio
@@ -33,33 +33,28 @@ class Renderer: NSObject, MTKViewDelegate {
         buildGeometry()
     }
     
-    // Считаем точки один раз, не каждый кадр
     private func buildGeometry() {
-        // Заполненный диск в центре (треугольный веер через origin)
         var disk: [SIMD2<Float>] = []
-        let diskPoints = 120
+        let diskPoints = Constants.numberOfSpikes
         for i in 0...diskPoints {
             let angle = Float(i) / Float(diskPoints) * 2 * .pi
             disk.append(SIMD2(cos(angle), sin(angle)))
-            disk.append(SIMD2(0, 0)) // origin — создаёт "веер" треугольников
+            disk.append(SIMD2(0, 0))
         }
         diskVertexCount = disk.count
         diskVertexBuffer = device.makeBuffer(bytes: disk, length: disk.count * MemoryLayout<SIMD2<Float>>.stride, options: [])
         
-        // Шипы: теперь каждый — это 4 вершины (прямоугольник = 2 треугольника), а не линия
         var spikes: [SIMD2<Float>] = []
-        let halfWidth: Float = 0.007 // толщина шипа — подбирай под вкус
+        let halfWidth: Float = Constants.halfWidth
         
         for i in 0..<numSpikes {
             let angle = Float(i) / Float(numSpikes) * 2 * .pi
             let dir = SIMD2<Float>(cos(angle), sin(angle))
-            let perp = SIMD2<Float>(-dir.y, dir.x) // перпендикуляр к направлению — задаёт толщину
-            
-            // Порядок вершин важен для triangleStrip: inner-left, inner-right, outer-left, outer-right
+            let perp = SIMD2<Float>(-dir.y, dir.x)
             spikes.append(dir + perp * halfWidth) // 0: inner-left
             spikes.append(dir - perp * halfWidth) // 1: inner-right
-            spikes.append(dir + perp * halfWidth) // 2: outer-left (та же позиция, shader растянет)
-            spikes.append(dir - perp * halfWidth) // 3: outer-right (та же позиция, shader растянет)
+            spikes.append(dir + perp * halfWidth) // 2: outer-left
+            spikes.append(dir - perp * halfWidth) // 3: outer-right
         }
         spikeVertexCount = spikes.count
         spikeVertexBuffer = device.makeBuffer(bytes: spikes, length: spikes.count * MemoryLayout<SIMD2<Float>>.stride, options: [])
@@ -91,7 +86,6 @@ class Renderer: NSObject, MTKViewDelegate {
         encoder.setRenderPipelineState(pipeline)
         encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.size, index: 1)
         
-        // Рисуем диск (заполненный круг)
         encoder.setVertexBuffer(diskVertexBuffer, offset: 0, index: 0)
         encoder.setVertexBytes([Int32(0)], length: 4, index: 2) // mode 0 = disk
         encoder.setFragmentBytes(
@@ -101,7 +95,6 @@ class Renderer: NSObject, MTKViewDelegate {
         )
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: diskVertexCount)
         
-        // Рисуем шипы поверх
         encoder.setVertexBuffer(spikeVertexBuffer, offset: 0, index: 0)
         encoder.setVertexBytes([Int32(1)], length: 4, index: 2) // mode 1 = spikes
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: spikeVertexCount)

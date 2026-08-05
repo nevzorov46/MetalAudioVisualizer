@@ -2,22 +2,20 @@ import AVFoundation
 import Accelerate
 import SwiftUI
 import Combine
-
 import AVFoundation
-import Accelerate
 
 class AudioAnalyzer: ObservableObject {
-    let engine = AVAudioEngine()
     
+    let engine = AVAudioEngine()
     var vocalsPlayer = AVAudioPlayerNode()
     var bassPlayer = AVAudioPlayerNode()
     var drumsPlayer = AVAudioPlayerNode()
     var otherPlayer = AVAudioPlayerNode()
     
-    @Published var vocalsLevel: Float = 0
-    @Published var bassLevel: Float = 0
-    @Published var drumsLevel: Float = 0
-    @Published var otherLevel: Float = 0
+    @Published var vocalsLevel: Float = Constants.defaultAudioLevel
+    @Published var bassLevel: Float = Constants.defaultAudioLevel
+    @Published var drumsLevel: Float = Constants.defaultAudioLevel
+    @Published var otherLevel: Float = Constants.defaultAudioLevel
     
     func start(vocals: String, bass: String, drums: String, other: String, ext: String) {
         guard
@@ -34,28 +32,28 @@ class AudioAnalyzer: ObservableObject {
             return
         }
         
-        setupPlayer(vocalsPlayer, format: vocalsFile.processingFormat, gain: 2.0) { [weak self] level in
+        setupPlayer(vocalsPlayer, format: vocalsFile.processingFormat, gain: Constants.vocalGain) { [weak self] level in
             self?.vocalsLevel = level
         }
-        setupPlayer(bassPlayer, format: bassFile.processingFormat, gain: 1.0) { [weak self] level in
+        setupPlayer(bassPlayer, format: bassFile.processingFormat, gain: Constants.bassGain) { [weak self] level in
             self?.bassLevel = level
         }
-        setupPlayer(drumsPlayer, format: drumsFile.processingFormat, gain: 0.85) { [weak self] level in
+        setupPlayer(drumsPlayer, format: drumsFile.processingFormat, gain: Constants.drumsGain) { [weak self] level in
             self?.drumsLevel = level
         }
-        setupPlayer(otherPlayer, format: otherFile.processingFormat, gain: 1.0) { [weak self] level in
+        setupPlayer(otherPlayer, format: otherFile.processingFormat, gain: Constants.otherInstrumentsGain) { [weak self] level in
             self?.otherLevel = level
         } 
         
         try? engine.start()
         
-        // Планируем все 4 файла на старт одновременно
+        // Schedule all files
         vocalsPlayer.scheduleFile(vocalsFile, at: nil)
         bassPlayer.scheduleFile(bassFile, at: nil)
         drumsPlayer.scheduleFile(drumsFile, at: nil)
         otherPlayer.scheduleFile(otherFile, at: nil)
         
-        let startTime = AVAudioTime(hostTime: mach_absolute_time() + 100_000_000)
+        let startTime = AVAudioTime(hostTime: mach_absolute_time() + Constants.startTimeDelay)
         vocalsPlayer.play(at: startTime)
         bassPlayer.play(at: startTime)
         drumsPlayer.play(at: startTime)
@@ -74,7 +72,7 @@ class AudioAnalyzer: ObservableObject {
                 sum += data[i] * data[i]
             }
             let rms = sqrt(sum / Float(frameLength))
-            let level = min(rms * 3.0 * gain, 1.0) // gain — свой коэффициент для каждого стема
+            let level = min(rms * 3.0 * gain, 1.0) // gain
             DispatchQueue.main.async {
                 tapHandler(level)
             }
