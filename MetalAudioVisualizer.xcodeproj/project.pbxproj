@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		0C445848301CB6DB00A81906 /* Meta-Audio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meta-Audio.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0C445848301CB6DB00A81906 /* MetalAudioVisualizer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MetalAudioVisualizer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,7 +40,7 @@
 		0C445849301CB6DB00A81906 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0C445848301CB6DB00A81906 /* Meta-Audio.app */,
+				0C445848301CB6DB00A81906 /* MetalAudioVisualizer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		0C445847301CB6DB00A81906 /* Meta-Audio */ = {
+		0C445847301CB6DB00A81906 /* MetalAudioVisualizer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0C445853301CB6DC00A81906 /* Build configuration list for PBXNativeTarget "Meta-Audio" */;
+			buildConfigurationList = 0C445853301CB6DC00A81906 /* Build configuration list for PBXNativeTarget "MetalAudioVisualizer" */;
 			buildPhases = (
 				0C445844301CB6DB00A81906 /* Sources */,
 				0C445845301CB6DB00A81906 /* Frameworks */,
@@ -63,11 +63,11 @@
 			fileSystemSynchronizedGroups = (
 				0C44584A301CB6DB00A81906 /* MetalAudioVisualizer */,
 			);
-			name = "Meta-Audio";
+			name = "MetalAudioVisualizer";
 			packageProductDependencies = (
 			);
-			productName = "Meta-Audio";
-			productReference = 0C445848301CB6DB00A81906 /* Meta-Audio.app */;
+			productName = "MetalAudioVisualizer";
+			productReference = 0C445848301CB6DB00A81906 /* MetalAudioVisualizer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0C445847301CB6DB00A81906 /* Meta-Audio */,
+				0C445847301CB6DB00A81906 /* MetalAudioVisualizer */,
 			);
 		};
 /* End PBXProject section */
@@ -267,7 +267,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "meta-auido.Meta-Audio";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nevzorov.MetalAudioVisualizer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -300,7 +300,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "meta-auido.Meta-Audio";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nevzorov.MetalAudioVisualizer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -324,7 +324,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0C445853301CB6DC00A81906 /* Build configuration list for PBXNativeTarget "Meta-Audio" */ = {
+		0C445853301CB6DC00A81906 /* Build configuration list for PBXNativeTarget "MetalAudioVisualizer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0C445854301CB6DC00A81906 /* Debug */,
