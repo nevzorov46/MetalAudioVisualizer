@@ -1,81 +1,94 @@
 import AVFoundation
 import Accelerate
-import SwiftUI
 import Combine
-import AVFoundation
 
-class AudioAnalyzer: ObservableObject {
-    
-    let engine = AVAudioEngine()
-    var vocalsPlayer = AVAudioPlayerNode()
-    var bassPlayer = AVAudioPlayerNode()
-    var drumsPlayer = AVAudioPlayerNode()
-    var otherPlayer = AVAudioPlayerNode()
-    
+/// Plays four isolated stems in sync and publishes a per-stem RMS level.
+final class AudioAnalyzer: ObservableObject {
+
+    /// The four stems. `rawValue` is also the audio file name (e.g. `vocals.m4a`).
+    enum Stem: String, CaseIterable {
+        case vocals, drums, bass, other
+
+        var gain: Float {
+            switch self {
+            case .vocals: return Constants.vocalGain
+            case .drums:  return Constants.drumsGain
+            case .bass:   return Constants.bassGain
+            case .other:  return Constants.otherInstrumentsGain
+            }
+        }
+    }
+
+    private let engine = AVAudioEngine()
+    private var players: [Stem: AVAudioPlayerNode] = [:]
+
     @Published var vocalsLevel: Float = Constants.defaultAudioLevel
-    @Published var bassLevel: Float = Constants.defaultAudioLevel
     @Published var drumsLevel: Float = Constants.defaultAudioLevel
+    @Published var bassLevel: Float = Constants.defaultAudioLevel
     @Published var otherLevel: Float = Constants.defaultAudioLevel
-    
-    func start(vocals: String, bass: String, drums: String, other: String, ext: String) {
-        guard
-            let vocalsURL = Bundle.main.url(forResource: vocals, withExtension: ext),
-            let bassURL = Bundle.main.url(forResource: bass, withExtension: ext),
-            let drumsURL = Bundle.main.url(forResource: drums, withExtension: ext),
-            let otherURL = Bundle.main.url(forResource: other, withExtension: ext),
-            let vocalsFile = try? AVAudioFile(forReading: vocalsURL),
-            let bassFile = try? AVAudioFile(forReading: bassURL),
-            let drumsFile = try? AVAudioFile(forReading: drumsURL),
-            let otherFile = try? AVAudioFile(forReading: otherURL)
-        else {
-            print("One or more files not found")
+
+    func start(fileExtension ext: String = Constants.extensionFormat) {
+        var files: [Stem: AVAudioFile] = [:]
+
+        for stem in Stem.allCases {
+            guard
+                let url = Bundle.main.url(forResource: stem.rawValue, withExtension: ext),
+                let file = try? AVAudioFile(forReading: url)
+            else {
+                print("Missing audio file for stem: \(stem.rawValue).\(ext)")
+                return
+            }
+            files[stem] = file
+
+            let player = AVAudioPlayerNode()
+            players[stem] = player
+            attach(player, format: file.processingFormat, gain: stem.gain) { [weak self] level in
+                self?.setLevel(level, for: stem)
+            }
+        }
+
+        do {
+            try engine.start()
+        } catch {
+            print("Audio engine failed to start: \(error)")
             return
         }
-        
-        setupPlayer(vocalsPlayer, format: vocalsFile.processingFormat, gain: Constants.vocalGain) { [weak self] level in
-            self?.vocalsLevel = level
-        }
-        setupPlayer(bassPlayer, format: bassFile.processingFormat, gain: Constants.bassGain) { [weak self] level in
-            self?.bassLevel = level
-        }
-        setupPlayer(drumsPlayer, format: drumsFile.processingFormat, gain: Constants.drumsGain) { [weak self] level in
-            self?.drumsLevel = level
-        }
-        setupPlayer(otherPlayer, format: otherFile.processingFormat, gain: Constants.otherInstrumentsGain) { [weak self] level in
-            self?.otherLevel = level
-        } 
-        
-        try? engine.start()
-        
-        // Schedule all files
-        vocalsPlayer.scheduleFile(vocalsFile, at: nil)
-        bassPlayer.scheduleFile(bassFile, at: nil)
-        drumsPlayer.scheduleFile(drumsFile, at: nil)
-        otherPlayer.scheduleFile(otherFile, at: nil)
-        
+
+        // Start every stem at one shared host time so they stay sample-aligned.
         let startTime = AVAudioTime(hostTime: mach_absolute_time() + Constants.startTimeDelay)
-        vocalsPlayer.play(at: startTime)
-        bassPlayer.play(at: startTime)
-        drumsPlayer.play(at: startTime)
-        otherPlayer.play(at: startTime)
+        for (stem, file) in files {
+            guard let player = players[stem] else { continue }
+            player.scheduleFile(file, at: nil)
+            player.play(at: startTime)
+        }
     }
-    
-    private func setupPlayer(_ player: AVAudioPlayerNode, format: AVAudioFormat, gain: Float, tapHandler: @escaping (Float) -> Void) {
+
+    private func attach(_ player: AVAudioPlayerNode,
+                        format: AVAudioFormat,
+                        gain: Float,
+                        onLevel: @escaping (Float) -> Void) {
         engine.attach(player)
         engine.connect(player, to: engine.mainMixerNode, format: format)
-        
+
         player.installTap(onBus: 0, bufferSize: 1024, format: nil) { buffer, _ in
-            guard let data = buffer.floatChannelData?[0] else { return }
-            let frameLength = Int(buffer.frameLength)
-            var sum: Float = 0
-            for i in 0..<frameLength {
-                sum += data[i] * data[i]
-            }
-            let rms = sqrt(sum / Float(frameLength))
-            let level = min(rms * 3.0 * gain, 1.0) // gain
+            guard let channel = buffer.floatChannelData?[0] else { return }
+
+            var rms: Float = 0
+            vDSP_rmsqv(channel, 1, &rms, vDSP_Length(buffer.frameLength))
+
+            let level = min(rms * Constants.rmsScale * gain, 1.0)
             DispatchQueue.main.async {
-                tapHandler(level)
+                onLevel(level)
             }
+        }
+    }
+
+    private func setLevel(_ level: Float, for stem: Stem) {
+        switch stem {
+        case .vocals: vocalsLevel = level
+        case .drums:  drumsLevel = level
+        case .bass:   bassLevel = level
+        case .other:  otherLevel = level
         }
     }
 }

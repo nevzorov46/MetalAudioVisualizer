@@ -16,6 +16,8 @@ struct Uniforms {
     float drums;
     float vocals;
     float other;
+    float aspectRatio;
+    float spikeCount;
 };
 
 vertex VertexOut vertexShader(const constant float2 *vertexArray [[buffer(0)]],
@@ -30,7 +32,7 @@ vertex VertexOut vertexShader(const constant float2 *vertexArray [[buffer(0)]],
     float diskScale = 0.25 + overall * 0.04;
     
     if (mode == 0) {
-        out.position = float4(v.x * diskScale, v.y * diskScale / 2.16, 0, 1);
+        out.position = float4(v.x * diskScale, v.y * diskScale / u.aspectRatio, 0, 1);
         float3 magentaTop = float3(0.02, 0.02, 0.025);
         float3 maroonBottom = float3(0.05, 0.05, 0.055);
         
@@ -44,7 +46,7 @@ vertex VertexOut vertexShader(const constant float2 *vertexArray [[buffer(0)]],
         bool isOuter = (vid % 4 >= 2);
         out.rayT = isOuter ? 1.0 : 0.0;
         out.isDisk = 0.0;
-        int numSpikes = 120;
+        int numSpikes = int(u.spikeCount);
         int sector = (spikeIndex * 4) / numSpikes; // 0..3
         
         float level = 0.0;
@@ -62,10 +64,10 @@ vertex VertexOut vertexShader(const constant float2 *vertexArray [[buffer(0)]],
                                 );
         
         float innerRadius = diskScale;
-        float spikeLength = level * 1.8; // spikeLenghth
+        float spikeLength = level * 1.3;
         float scale = isOuter ? (innerRadius + spikeLength) : innerRadius;
-        out.position = float4(rotated.x * scale, rotated.y * scale / 2.16, 0, 1);
-        out.color = float4(color, isOuter ? 1.0 : 1.0);
+        out.position = float4(rotated.x * scale, rotated.y * scale / u.aspectRatio, 0, 1);
+        out.color = float4(color, 1.0);
     }
     
     return out;

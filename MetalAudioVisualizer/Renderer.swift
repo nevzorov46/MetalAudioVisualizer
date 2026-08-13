@@ -1,6 +1,17 @@
 import MetalKit
 import simd
 
+/// Matches the `Uniforms` struct in `Shaders.metal` — keep the field order in sync.
+private struct Uniforms {
+    var time: Float
+    var bass: Float
+    var drums: Float
+    var vocals: Float
+    var other: Float
+    var aspectRatio: Float
+    var spikeCount: Float
+}
+
 class Renderer: NSObject, MTKViewDelegate {
     let device = MTLCreateSystemDefaultDevice()!
     var queue: MTLCommandQueue!
@@ -65,20 +76,17 @@ class Renderer: NSObject, MTKViewDelegate {
     func draw(in view: MTKView) {
         guard let drawable = view.currentDrawable,
               let descriptor = view.currentRenderPassDescriptor else { return }
-        
-        struct Uniforms {
-            var time: Float
-            var bass: Float
-            var drums: Float
-            var vocals: Float
-            var other: Float
-        }
+
+        let size = view.drawableSize
+        let aspectRatio = size.width > 0 ? Float(size.height / size.width) : 1.0
         var uniforms = Uniforms(
             time: Float(Date().timeIntervalSince(startTime)),
             bass: audio.bassLevel,
             drums: audio.drumsLevel,
             vocals: audio.vocalsLevel,
-            other: audio.otherLevel
+            other: audio.otherLevel,
+            aspectRatio: aspectRatio,
+            spikeCount: Float(numSpikes)
         )
         
         let buffer = queue.makeCommandBuffer()!
