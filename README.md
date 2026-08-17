@@ -41,29 +41,6 @@ single Metal shader that draws the whole scene on the GPU.
 - **Additive HDR blending** (`rgba16Float`) for a soft, glowing look.
 - **60 FPS** rendering through `MTKView`.
 
-## How it works
-
-```
-Audio Tracks (.m4a)                 GPU
- ┌───────────────┐    RMS tap   ┌──────────────────────────┐
- │ vocals        ├──────────────► vocalsLevel              │
- │ drums         ├──────────────► drumsLevel   ── Uniforms ─► Shaders.metal
- │ bass          ├──────────────► bassLevel                │   • disk (core)
- │ other         ├──────────────► otherLevel               │   • 120 spikes
- └──────┬────────┘              └──────────────────────────┘
-        │                                    │
-  AVAudioEngine  ─── mainMixerNode ──► speakers        MTKView @ 60 FPS
-```
-
-1. **`AudioAnalyzer`** attaches four `AVAudioPlayerNode`s to one `AVAudioEngine`,
-   schedules all files, and starts them at a shared host time so the stems stay locked
-   together. Each node installs a tap that computes an RMS level per buffer.
-2. **`Renderer`** builds the disk and spike geometry once, then every frame packs the
-   four stem levels (plus elapsed time) into a `Uniforms` struct and issues two draw
-   calls.
-3. **`Shaders.metal`** turns each stem's level into spike length and color, rotates the
-   ring over time, and adds a soft radial glow scaled by overall loudness.
-
 ## Tech stack
 
 | Layer         | Technology                          |
