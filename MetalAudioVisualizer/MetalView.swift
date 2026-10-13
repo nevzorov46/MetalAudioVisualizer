@@ -1,20 +1,18 @@
-import Combine
-import UIKit
-import Foundation
-import SwiftUI
 import MetalKit
+import SwiftUI
 
 struct MetalView: UIViewRepresentable {
-    @ObservedObject var audio: AudioAnalyzer
-    
+    let audio: AudioAnalyzer
+
+    func makeCoordinator() -> Renderer { Renderer(audio: audio) }
+
     func makeUIView(context: Context) -> MTKView {
-        let view = MTKView()
-        view.colorPixelFormat = .rgba16Float
-        view.device = MTLCreateSystemDefaultDevice()
-        view.delegate = context.coordinator
+        let view = MTKView(frame: .zero, device: context.coordinator.device)
+        view.colorPixelFormat = Renderer.outputPixelFormat
         view.preferredFramesPerSecond = Constants.preferredFramesPerSecond
+        view.delegate = context.coordinator
         return view
     }
+
     func updateUIView(_ uiView: MTKView, context: Context) {}
-    func makeCoordinator() -> Renderer { Renderer(audio: audio) }
 }
